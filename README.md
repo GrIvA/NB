@@ -1,0 +1,4 @@
+NB
+==
+
+Creating autoclick robot
