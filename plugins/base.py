@@ -45,4 +45,4 @@ class baseplugin (object):
         return nbCommon.retCodeOK
 
     def errorCorrect(self, error):
-        return nbCommon.retCodeOK
+        return error

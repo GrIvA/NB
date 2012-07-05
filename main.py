@@ -42,17 +42,23 @@ if __name__ == '__main__':
     logging.basicConfig(format = u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s', level = logging.DEBUG)
     err = loadPlugins(sys.argv[1])
 
-
+    vTimeSleep = nbCommon.vTimeSleep
     while (err[0] == 0) or (err == nbCommon.retCodeNetworkError):
-        req = modules['object'].getPage()
+        if err[0] == 0:
+            err = modules['object'].getPage()
+            err = modules['object'].analysePage(err)
 
-        if req[0] == 0:
-            err = modules['object'].analysePage()
-            if err == 0:
+            if err == nbCommon.retCodeReklYes:
                 logging.info(u"Заглушка: Можем смотреть рекламу.")
-            else:
-                err = modules['object'].errorCorrect(err)
-        time.sleep(20)
+
+                err = nbCommon.retCodeOK
+
+        err = modules['object'].errorCorrect(err)
+        if err == nbCommon.retCodeNetworkError:
+            vTimeSleep = 1.30*vTimeSleep if vTimeSleep < 800 else 900
+        else: vTimeSleep = nbCommon.vTimeSleep
+        logging.debug(u"Sleeping %s sec." % vTimeSleep)
+        time.sleep(vTimeSleep)
         #exit()
 
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
+import os
 import base
 import time, re
 from grab.tools import rex
@@ -13,12 +14,17 @@ class NEOBUX(base.baseplugin):
     neo_pass2 = ''
     httpLink = "http://ad.neobux.com/adalert/g/?t="
     httpLogin = "https://www.neobux.com/m/l/"
-#    httpLink = "http://spystorm.net/test_function.html?t="
-#    httpLogin = "http://spystorm.net/test_noformat.html"
+    neoCookieFile = "Trash/neo_cookie"
 
     def __init__(self):
         base.baseplugin.__init__(self)
         logging.debug(u"==> init")
+        self.gr_module.setup(reuse_referer = True)
+        if not os.path.exists("Trash/neo_cookie"): 
+            f = open(self.neoCookieFile, "w")
+        self.gr_module.setup(cookiefile = self.neoCookieFile)
+        # self.gr_module.setup(log_dir = 'd:\Work\Python\Surf_bux\Login\log')
+
 
     def getPage (self):
         """
@@ -78,11 +84,9 @@ class NEOBUX(base.baseplugin):
         return nbCommon.retCodeOK
 
 
-    def analysePage(self):
-        """
-        ERROR:
-            1 - login
-        """
+    def analysePage(self, err):
+        if err[0]: return err
+
         if self.gr_module.response.code != 200:
             logging.error(u"ERROR: %d" % self.gr_module.response.code)
             return nbCommon.retCodeNetworkError
@@ -94,7 +98,8 @@ class NEOBUX(base.baseplugin):
             return nbCommon.retCodeNoLogin
         return nbCommon.retCodeOK
 
-    def errorCorrect(self, error):
-        if error == retCodeNoLogin:  # Login
+    def errorCorrect(self, err):
+        if err[0] == 0: return nbCommon.retCodeOK
+        elif err == nbCommon.retCodeNoLogin:  # Login
             return self.login2site()
-        return nbCommon.retCodeOK
+        return base.baseplugin.errorCorrect(self, err)
