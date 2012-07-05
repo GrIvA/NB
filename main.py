@@ -3,6 +3,7 @@
 import os, sys
 import inspect
 import time
+import logging
 
 
 plugin_dir = "plugins"
@@ -14,10 +15,9 @@ modules = {}
 
 def loadPlugins(plugName):
     """Load plugins from plugin directory"""
-    print "load module: ==> %s" % plugName
+    logging.debug(u"load module: ==> %s" % plugName)
     package_obj = __import__(plugin_dir + "." +  plugName)
     module_obj = getattr(package_obj, plugName)
-    # Перебираем все, что внутри модуля
     for elem in dir(module_obj):
         obj = getattr (module_obj, elem)
         # Это класс? Класс производный от baseplugin?
@@ -34,18 +34,19 @@ if __name__ == '__main__':
         """
         exit()
 
-    if loadPlugins(sys.argv[1]): print "ERROR: Can't load module..."
+    logging.basicConfig(format = u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s', level = logging.DEBUG)
+    if loadPlugins(sys.argv[1]): logging.critical(u"ERROR: Can't load module...")
 
     err = 0
     while err == 0:
         req = modules['object'].getPage()
 
         if req[0] != 0:
-            print "main: ERROR %s (%s)" % (req[0], req[1])
+            logging.error(u"main: ERROR %s (%s)" % (req[0], req[1]))
         else:
             err = modules['object'].analysePage()
             if err == 0:
-                print "Заглушка: Можем смотреть рекламу."
+                logging.info(u"Заглушка: Можем смотреть рекламу.")
             else:
                 err = modules['object'].errorCorrect(err)
         time.sleep(20)
