@@ -2,14 +2,16 @@
 #-*- coding: utf-8 -*-
 from grab import Grab
 from grab.error import GrabNetworkError
+from grab.error import GrabConnectionError
 import logging
+import nbCommon
 
 class baseplugin (object):
     gr_module = 0
     def __init__(self):
         logging.debug(u" ==> init")
         self.gr_module = Grab()
-        # self.gr_module.setup(proxy = '127.0.0.1:8888', proxy_type = 'http')
+        self.gr_module.setup(proxy = '127.0.0.1:8888', proxy_type = 'http')
         self.gr_module.setup(reuse_referer = True)
     
     def getPage(self):
@@ -23,9 +25,12 @@ class baseplugin (object):
             self.gr_module.go(link)
         except GrabNetworkError as e:
             logging.error(u"Error socket: %s" % e)
-            return (900, "Network error")
+            return nbCommon.retCodeNetworkError
+        except GrabConnectionError as e:
+            logging.error(u"Error connection: %s" % e)
+            return nbCommon.retCodeNetworkError
         else:
-            return (0, "Ok")
+            return nbCommon.retCodeOK
 
     def analysePage(self):
         """
@@ -37,7 +42,7 @@ class baseplugin (object):
         знать обработчик ошибок класса.
 
         """
-        return (0, 'OK')
+        return nbCommon.retCodeOK
 
     def errorCorrect(self, error):
-        return (0, 'OK')
+        return nbCommon.retCodeOK

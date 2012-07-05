@@ -4,6 +4,8 @@
 import base
 import time, re
 from grab.tools import rex
+import logging
+import nbCommon
 
 class NEOBUX(base.baseplugin):
     neo_login = 'griva99'
@@ -16,7 +18,7 @@ class NEOBUX(base.baseplugin):
 
     def __init__(self):
         base.baseplugin.__init__(self)
-        print "NEO: ==> init"
+        logging.debug(u"==> init")
 
     def getPage (self):
         """
@@ -24,32 +26,32 @@ class NEOBUX(base.baseplugin):
         """
         return self.getHTTP(self.httpLink+str(int(time.time())))
 
-    def login2site(self):
-        def w(key):
-            k='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
-            j = 0; r = ''
-            while j < len(key):
-                e1 = k.find(key[j])
-                e2 = k.find(key[j+1])
-                e3 = k.find(key[j+2])
-                e4 = k.find(key[j+3])
-                j += 4
-                c1 = (e1<<2)|(e2>>4)
-                c2 = ((e2&15)<<4)|(e3>>2)
-                c3 = ((e3&3)<<6)|e4
-                r = r + chr(c1)
-                if e3 != 64: r = r + chr(c2)
-                if e4 != 64: r = r + chr(c3)
-            return r
+    def w(self, key):
+        k='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
+        j = 0; r = ''
+        while j < len(key):
+            e1 = k.find(key[j])
+            e2 = k.find(key[j+1])
+            e3 = k.find(key[j+2])
+            e4 = k.find(key[j+3])
+            j += 4
+            c1 = (e1<<2)|(e2>>4)
+            c2 = ((e2&15)<<4)|(e3>>2)
+            c3 = ((e3&3)<<6)|e4
+            r = r + chr(c1)
+            if e3 != 64: r = r + chr(c2)
+            if e4 != 64: r = r + chr(c3)
+        return r
 
-        print " NEO: ==> Ждем 5 сек. и логинимся..."
+    def login2site(self):
+        logging.debug(u"Wait 5 sec. and trying to login...")
         time.sleep(5)
         login_fields = {}
         if self.getHTTP(self.httpLogin)[0]:
-            print "NEO: ERROR load login page."
-            return 2
+            logging.error(u"NEO: ERROR load login page.")
+            return nbCommon.retCodeNoLoadLP
 
-        login_fields['lg'] = w(rex.rex_text(self.gr_module.response.body, re.compile("lg1\('(\w*.)'")))
+        login_fields['lg'] = self.w(rex.rex_text(self.gr_module.response.body, re.compile("lg1\('(\w*.)'")))
         login_fields['img'] = self.gr_module.xpath('//iframe[@class="mbxm"]').get('src')
 
         login_fields['Kf1'] = self.gr_module.xpath('//input[@id="Kf1"]').get('name')
@@ -59,16 +61,12 @@ class NEOBUX(base.baseplugin):
         login_fields['lge'] = self.gr_module.xpath('//input[@name="lge"]').get('value')
         login_fields['login'] = self.gr_module.xpath('//input[@name="login"]').get('value')
 
-        #g_img = self.gr_module.clone()
         self.getHTTP(login_fields['img'])
         img_url = self.gr_module.xpath('//div[@id="a"]/img').get('src')
-        #self.gr_module.adopt(g_img)
         login_fields['captcha'] = raw_input("https://img.neobux.com"+img_url+"  ==> Input 5 symvols: ")
-        print login_fields
+        # print login_fields
 
-        print "NEO:login ==> Формируем данные POST запроса"
-        #self.gr_module.setup(reuse_referer = False)
-        #self.gr_module.setup(referer=self.httpLogin)
+        logging.debug(u"login ==> POST data")
         self.gr_module.setup(post='lge='+login_fields['lge']+'&'+
                                    login_fields['Kf1']+login_fields['lg'][2]+'='+self.neo_login+'&'+
                                    login_fields['Kf2']+login_fields['lg'][6]+'='+self.neo_pass+'&'+
@@ -77,9 +75,7 @@ class NEOBUX(base.baseplugin):
                                    'login='+login_fields['login'])
 
         self.getHTTP(self.httpLogin)
-        #self.gr_module.setup(reuse_referer = True)
-        #print self.gr_module.response.body
-        return 0
+        return nbCommon.retCodeOK
 
 
     def analysePage(self):
@@ -88,17 +84,17 @@ class NEOBUX(base.baseplugin):
             1 - login
         """
         if self.gr_module.response.code != 200:
-            print "ERROR: %d" % self.gr_module.response.code
-            return 900
+            logging.error(u"ERROR: %d" % self.gr_module.response.code)
+            return nbCommon.retCodeNetworkError
 
         print self.gr_module.response.body
         #Может нужно залогинится?
         if self.gr_module.response.body[1] == '0' or  len(self.gr_module.response.body) > 300:
             print "NEO: login ERROR."
-            return 1
-        return 0
+            return nbCommon.retCodeNoLogin
+        return nbCommon.retCodeOK
 
     def errorCorrect(self, error):
-        if error == 1:  # Login
+        if error == retCodeNoLogin:  # Login
             return self.login2site()
-        return 0
+        return nbCommon.retCodeOK
