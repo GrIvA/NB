@@ -11,11 +11,20 @@ class baseplugin (object):
     def __init__(self):
         logging.debug(u" ==> init")
         self.gr_module = Grab()
-        self.gr_module.setup(proxy = '127.0.0.1:8888', proxy_type = 'http')
+
+        try: self.gr_module.setup(proxy = nbCommon.proxy, proxy_type = nbCommon.proxy_type)
+        except: pass
+
         self.gr_module.setup(reuse_referer = True)
     
     def getPage(self):
-        pass
+        return nbCommon.retCodeOK
+        
+    def getAdvPage(self, aAdvLink):
+        return nbCommon.retCodeOK
+
+    def clickLinks(self, Link):
+        return nbCommon.retCodeOK
 
     def getHTTP (self, link):
         """

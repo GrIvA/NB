@@ -12,9 +12,12 @@ class NEOBUX(base.baseplugin):
     neo_login = 'griva99'
     neo_pass  = '%40OaoIkgoIwwy_71'
     neo_pass2 = ''
-    httpLink = "http://ad.neobux.com/adalert/g/?t="
+    httpLink = ".neobux.com/adalert/g/?t="
+    httpLink2 = "ad"
     httpLogin = "https://www.neobux.com/m/l/"
+    httpAdv = "https://www.neobux.com/m/v/"
     neoCookieFile = "Trash/neo_cookie"
+    advCount = 0
 
     def __init__(self):
         base.baseplugin.__init__(self)
@@ -30,7 +33,7 @@ class NEOBUX(base.baseplugin):
         """
         Получение http страницы, анализ ее на ошибки"
         """
-        return self.getHTTP(self.httpLink+str(int(time.time())))
+        return self.getHTTP("http://"+self.httpLink2+self.httpLink+str(int(time.time())))
 
     def w(self, key):
         k='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
@@ -48,6 +51,21 @@ class NEOBUX(base.baseplugin):
             if e3 != 64: r = r + chr(c2)
             if e4 != 64: r = r + chr(c3)
         return r
+
+    def getAdvPage(self, aAdvLink):
+        logging.debug(u"load adv page.")
+        if self.getHTTP(self.httpAdv)[0]:
+            logging.error(u"NEO: ERROR load login page.")
+            return nbCommon.retCodeNetworkError
+        server = re.search(r'href="(http://ad.+a=l&l=)', self.gr_module.response.body)   
+        aAdvFound = re.findall(r'dr_l\(\[.*?]\)',self.gr_module.response.body)
+        for ad in aAdvFound:
+            price = re.search(r',0\.(0\d\d)', ad)
+            s = ad.split(',')
+
+            print server.group(1)+self.w(s[1][1:-1])+' ### 0.'+price.group(1)
+
+        return nbCommon.retCodeOK
 
     def login2site(self):
         logging.debug(u"Wait 5 sec. and trying to login...")
@@ -69,7 +87,8 @@ class NEOBUX(base.baseplugin):
 
         self.getHTTP(login_fields['img'])
         img_url = self.gr_module.xpath('//div[@id="a"]/img').get('src')
-        login_fields['captcha'] = raw_input("https://img.neobux.com"+img_url+"  ==> Input 5 symvols: ")
+        vCaptcha = raw_input("https://img.neobux.com"+img_url+"  ==> Input 5 symvols: ")
+        login_fields['captcha'] = vCaptcha.upper()
         # print login_fields
 
         logging.debug(u"login ==> POST data")
@@ -79,9 +98,7 @@ class NEOBUX(base.baseplugin):
                                    login_fields['Kf4']+login_fields['lg'][14]+'='+self.neo_pass2+'&'+
                                    login_fields['Kf3']+login_fields['lg'][10]+'='+login_fields['captcha']+'&'+
                                    'login='+login_fields['login'])
-
-        self.getHTTP(self.httpLogin)
-        return nbCommon.retCodeOK
+        return self.getHTTP(self.httpLogin)
 
 
     def analysePage(self, err):
@@ -91,15 +108,22 @@ class NEOBUX(base.baseplugin):
             logging.error(u"ERROR: %d" % self.gr_module.response.code)
             return nbCommon.retCodeNetworkError
 
-        print self.gr_module.response.body
+        logging.debug(u"status: "+self.gr_module.response.body)
         #Может нужно залогинится?
         if self.gr_module.response.body[1] == '0' or  len(self.gr_module.response.body) > 300:
-            print "NEO: login ERROR."
+            logging.error(u"NEO: login ERROR.")
             return nbCommon.retCodeNoLogin
+        aStatus = self.gr_module.response.body[1:].split(",")
+        self.httpLink2 = aStatus[29][1:-2]
+        if (aStatus[18] != '0') :
+            self.advCount = aStatus[3]
+            return nbCommon.retCodeReklYes
         return nbCommon.retCodeOK
 
     def errorCorrect(self, err):
         if err[0] == 0: return nbCommon.retCodeOK
         elif err == nbCommon.retCodeNoLogin:  # Login
             return self.login2site()
-        return base.baseplugin.errorCorrect(self, err)
+        elif err == nbCommon.retCodeNetworkError: # Network Connection
+            return nbCommon.retCodeOK
+        return base.baseplugin.errorCorrect(self, err) # Other Error

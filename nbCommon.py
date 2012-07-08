@@ -11,3 +11,5 @@ retCodeNetworkError = (900, "Network ERROR")
 
 # *********************************
 vTimeSleep = 20
+#proxy = '127.0.0.1:8888'
+#proxy_type = 'http'

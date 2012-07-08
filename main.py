@@ -16,7 +16,7 @@ modules = {}
 
 def loadPlugins(plugName):
     """Load plugins from plugin directory"""
-    logging.debug(u"load module: ==> %s" % plugName)
+    logging.info(u"load module: ==> %s" % plugName)
 
     try:
         package_obj = __import__(plugin_dir + "." +  plugName)
@@ -49,18 +49,18 @@ if __name__ == '__main__':
             err = modules['object'].analysePage(err)
 
             if err == nbCommon.retCodeReklYes:
-                logging.info(u"Заглушка: Можем смотреть рекламу.")
+                aAdvLink = []
+                err = modules['object'].getAdvPage(aAdvLink)
+                logging.debug(u"Adv links: %s" % aAdvLink)
+                for a in aAdvLink:
+                    err = modules['object'].clickLinks(a)
+                    if err[0]: break;
 
-                err = nbCommon.retCodeOK
-
-        err = modules['object'].errorCorrect(err)
         if err == nbCommon.retCodeNetworkError:
             vTimeSleep = 1.30*vTimeSleep if vTimeSleep < 800 else 900
         else: vTimeSleep = nbCommon.vTimeSleep
+
+        err = modules['object'].errorCorrect(err)
         logging.debug(u"Sleeping %s sec." % vTimeSleep)
         time.sleep(vTimeSleep)
-        #exit()
-
-
-
 
