@@ -7,6 +7,7 @@ import time, re
 from grab.tools import rex
 import logging
 import nbCommon
+import pickle
 
 class NEOBUX(base.baseplugin):
     neo_login = 'griva99'
@@ -18,15 +19,34 @@ class NEOBUX(base.baseplugin):
     httpAdv = "https://www.neobux.com/m/v/"
     neoCookieFile = "Trash/neo_cookie"
     advCount = 0
+    aServerHash = {}
+    vServerHashPath = "Trash/ServerHash"
+
 
     def __init__(self):
         base.baseplugin.__init__(self)
         logging.debug(u"==> init")
         self.gr_module.setup(reuse_referer = True)
-        if not os.path.exists("Trash/neo_cookie"): 
+        if not os.path.exists(self.neoCookieFile): 
             f = open(self.neoCookieFile, "w")
         self.gr_module.setup(cookiefile = self.neoCookieFile)
         # self.gr_module.setup(log_dir = 'd:\Work\Python\Surf_bux\Login\log')
+        if os.path.exists(self.vServerHashPath): 
+            f = open(self.vServerHashPath, "rb")
+            aServerHash = pickle.load(f)
+            f.close()
+
+
+    def getHashServer(self, Server, hash):
+        # TODO: len(hash) == 64
+        if Server in self.aServerHash: pass
+        else: 
+            self.aServerHash[Server] = hash
+            f = open(self.vServerHashPath, "wb")
+            pickle.dump(self.aServerHash, f)
+            f.close()
+
+        return self.aServerHash[Server]
 
 
     def getPage (self):
@@ -52,20 +72,38 @@ class NEOBUX(base.baseplugin):
             if e4 != 64: r = r + chr(c3)
         return r
 
-    def getAdvPage(self, aAdvLink):
-        logging.debug(u"load adv page.")
-        if self.getHTTP(self.httpAdv)[0]:
-            logging.error(u"NEO: ERROR load login page.")
+    def clickLinks(self, aLink):
+        if self.getHTTP(aLink[1]+self.w(aLink[0][1][1:-1]))[0]:
+            logging.error(u"clickLinks: ERROR load login page.")
             return nbCommon.retCodeNetworkError
-        server = re.search(r'href="(http://ad.+a=l&l=)', self.gr_module.response.body)   
-        aAdvFound = re.findall(r'dr_l\(\[.*?]\)',self.gr_module.response.body)
-        for ad in aAdvFound:
-            price = re.search(r',0\.(0\d\d)', ad)
-            s = ad.split(',')
-
-            print server.group(1)+self.w(s[1][1:-1])+' ### 0.'+price.group(1)
-
+        try:
+            hash = re.search(r"try{df\('(.*?)'\);}", self.gr_module.response.body).group(1)
+        except Exception, e:
+            return nbCommon.retCodeClickLinksError
+        
+        if self.getHTTP(aLink[1][:-7]+'v1/?s='+self.w(aLink[0][1][1:-1])+'&y='+self.getHashServer(aLink[1], hash)+'&noCache='+str(int(time.time())))[0]:
+            return nbCommon.retCodeClickLinksError2
+        if self.gr_module.response.body != "o=['0'];D();": return nbCommon.retCodeClickLinksError4
+        time.sleep(int(aLink[0][8])+1)
+        if self.getHTTP(aLink[1][:-7]+'v2/?s='+self.w(aLink[0][1][1:-1])+'&y='+self.getHashServer(aLink[1], hash)+'&noCache='+str(int(time.time())))[0]:
+            return nbCommon.retCodeClickLinksError3
+        # TODO Проконтролировать второй ответ
         return nbCommon.retCodeOK
+
+    def getAdvPage(self):
+        logging.debug(u"load adv page.")
+        aLink = []
+        if self.getHTTP(self.httpAdv)[0]:
+            logging.error(u"getAdvPage: ERROR load login page.")
+            return aLink
+        server = re.search(r'href="(http://ad.+a=l&l=)', self.gr_module.response.body)   
+        for ad in re.findall(r'dr_l\(\[.*?]\)',self.gr_module.response.body):
+            price = re.findall(r'(\'.*?\'|\d{1,2}(?:\.\d{3})?)', ad)
+            # price[9] - Active link
+            # price[8] - Time Link
+            # price[11] - Price Link
+            if price[9] != '0': aLink.append([price, server.group(1)])
+        return aLink
 
     def login2site(self):
         logging.debug(u"Wait 5 sec. and trying to login...")

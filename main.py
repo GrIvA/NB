@@ -49,12 +49,15 @@ if __name__ == '__main__':
             err = modules['object'].analysePage(err)
 
             if err == nbCommon.retCodeReklYes:
-                aAdvLink = []
-                err = modules['object'].getAdvPage(aAdvLink)
-                logging.debug(u"Adv links: %s" % aAdvLink)
+                aAdvLink = modules['object'].getAdvPage()
+                logging.info(u"Advertising...")
                 for a in aAdvLink:
                     err = modules['object'].clickLinks(a)
-                    if err[0]: break;
+                    logging.debug(u"Sleeping 3 sec.")
+                    time.sleep(3)
+                    if err[0]: 
+                        logging.error(err)
+                        break
 
         if err == nbCommon.retCodeNetworkError:
             vTimeSleep = 1.30*vTimeSleep if vTimeSleep < 800 else 900

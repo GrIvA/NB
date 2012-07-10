@@ -20,8 +20,8 @@ class baseplugin (object):
     def getPage(self):
         return nbCommon.retCodeOK
         
-    def getAdvPage(self, aAdvLink):
-        return nbCommon.retCodeOK
+    def getAdvPage(self):
+        return []
 
     def clickLinks(self, Link):
         return nbCommon.retCodeOK

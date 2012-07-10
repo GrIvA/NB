@@ -6,6 +6,11 @@ retCodeNoLoadPlug = (1, "Plugin does not exist.")
 retCodeNoLoadLP = (2, "ERROR load login page.")
 retCodeNoLogin = (3, "No login to site.")
 retCodeReklYes = (4, "New reklama.")
+retCodeClickLinksError = (5, "ERROR link analiser...")
+retCodeClickLinksError2 = (6, "ERROR link analiser. No request fist post...")
+retCodeClickLinksError3 = (7, "ERROR link analiser. No request second post...")
+retCodeClickLinksError4 = (8, "ERROR link analiser. Non standart first ansver...")
+retCodeClickLinksError5 = (9, "ERROR link analiser. Non standart second ansver...")
 
 retCodeNetworkError = (900, "Network ERROR")
 
