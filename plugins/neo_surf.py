@@ -34,7 +34,7 @@ class NEOBUX(base.baseplugin):
         # self.gr_module.setup(log_dir = 'd:\Work\Python\Surf_bux\Login\log')
         if os.path.exists(self.vServerHashPath): 
             f = open(self.vServerHashPath, "rb")
-            aServerHash = pickle.load(f)
+            self.aServerHash = pickle.load(f)
             f.close()
 
 
@@ -45,6 +45,7 @@ class NEOBUX(base.baseplugin):
             self.aServerHash[Server] = hash
             f = open(self.vServerHashPath, "wb")
             pickle.dump(self.aServerHash, f)
+            print self.aServerHash
             f.close()
 
         return self.aServerHash[Server]
@@ -74,6 +75,7 @@ class NEOBUX(base.baseplugin):
         return r
 
     def clickLinks(self, aLink):
+        print aLink
         if self.getHTTP(aLink[1]+self.w(aLink[0][1][1:-1]))[0]:
             logging.error(u"clickLinks: ERROR load login page.")
             return nbCommon.retCodeNetworkError
@@ -85,7 +87,13 @@ class NEOBUX(base.baseplugin):
         if self.getHTTP(aLink[1][:-7]+'v1/?s='+self.w(aLink[0][1][1:-1])+'&y='+self.getHashServer(aLink[1], hash)+'&noCache='+str(int(time.time())))[0]:
             return nbCommon.retCodeClickLinksError2
         if self.gr_module.response.body != "o=['0'];D();": return nbCommon.retCodeClickLinksError4
-        time.sleep(int(aLink[0][8])+1)
+        if aLink[0][11] == "0.001": vSleep = 5
+        elif aLink[0][11] == "0.010": vSleep = 33
+        elif aLink[0][11] == "0.015": vSleep = 65
+        else:
+            logging.info(u"## New price is %s ###" % price)
+            vSleep = 33
+        time.sleep(vSleep)
         if self.getHTTP(aLink[1][:-7]+'v2/?s='+self.w(aLink[0][1][1:-1])+'&y='+self.getHashServer(aLink[1], hash)+'&noCache='+str(int(time.time())))[0]:
             return nbCommon.retCodeClickLinksError3
         # TODO Проконтролировать второй ответ
