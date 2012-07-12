@@ -21,6 +21,7 @@ class NEOBUX(base.baseplugin):
     advCount = 0
     aServerHash = {}
     vServerHashPath = "Trash/ServerHash"
+    vCash = 0
 
 
     def __init__(self):
@@ -79,7 +80,7 @@ class NEOBUX(base.baseplugin):
         try:
             hash = re.search(r"try{df\('(.*?)'\);}", self.gr_module.response.body).group(1)
         except Exception, e:
-            return nbCommon.retCodeClickLinksError
+            return nbCommon.retCodeClickLinksError6
         
         if self.getHTTP(aLink[1][:-7]+'v1/?s='+self.w(aLink[0][1][1:-1])+'&y='+self.getHashServer(aLink[1], hash)+'&noCache='+str(int(time.time())))[0]:
             return nbCommon.retCodeClickLinksError2
@@ -88,6 +89,9 @@ class NEOBUX(base.baseplugin):
         if self.getHTTP(aLink[1][:-7]+'v2/?s='+self.w(aLink[0][1][1:-1])+'&y='+self.getHashServer(aLink[1], hash)+'&noCache='+str(int(time.time())))[0]:
             return nbCommon.retCodeClickLinksError3
         # TODO Проконтролировать второй ответ
+        print self.gr_module.response.body
+        self.vCash += float(aLink[0][11])
+        logging.info(u"Your cash %.3f $" % self.vCash)
         return nbCommon.retCodeOK
 
     def getAdvPage(self):
@@ -106,6 +110,8 @@ class NEOBUX(base.baseplugin):
         return aLink
 
     def login2site(self):
+        f = open(self.neoCookieFile, "w")
+        f.close() 
         logging.debug(u"Wait 5 sec. and trying to login...")
         time.sleep(5)
         login_fields = {}
@@ -146,12 +152,12 @@ class NEOBUX(base.baseplugin):
             logging.error(u"ERROR: %d" % self.gr_module.response.code)
             return nbCommon.retCodeNetworkError
 
-        logging.debug(u"status: "+self.gr_module.response.body)
         #Может нужно залогинится?
         if self.gr_module.response.body[1] == '0' or  len(self.gr_module.response.body) > 300:
             logging.error(u"NEO: login ERROR.")
             return nbCommon.retCodeNoLogin
         aStatus = self.gr_module.response.body[1:].split(",")
+        logging.info(u"cash: %s.%s$, adv: %s" % (aStatus[7][:-1], aStatus[8][1:], aStatus[18]))
         self.httpLink2 = aStatus[29][1:-2]
         if (aStatus[18] != '0') :
             self.advCount = aStatus[3]

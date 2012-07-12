@@ -11,6 +11,7 @@ retCodeClickLinksError2 = (6, "ERROR link analiser. No request fist post...")
 retCodeClickLinksError3 = (7, "ERROR link analiser. No request second post...")
 retCodeClickLinksError4 = (8, "ERROR link analiser. Non standart first ansver...")
 retCodeClickLinksError5 = (9, "ERROR link analiser. Non standart second ansver...")
+retCodeClickLinksError6 = (10, "ERROR link analiser. No HASH code...")
 
 retCodeNetworkError = (900, "Network ERROR")
 

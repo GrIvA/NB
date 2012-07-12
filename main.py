@@ -39,7 +39,7 @@ if __name__ == '__main__':
         """
         exit()
 
-    logging.basicConfig(format = u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s', level = logging.DEBUG)
+    logging.basicConfig(format = u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s', level = logging.INFO)
     err = loadPlugins(sys.argv[1])
 
     vTimeSleep = nbCommon.vTimeSleep
@@ -53,8 +53,8 @@ if __name__ == '__main__':
                 logging.info(u"Advertising...")
                 for a in aAdvLink:
                     err = modules['object'].clickLinks(a)
-                    logging.debug(u"Sleeping 3 sec.")
-                    time.sleep(3)
+                    logging.debug(u"Sleeping 10 sec.")
+                    time.sleep(10)
                     if err[0]: 
                         logging.error(err)
                         break
