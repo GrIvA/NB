@@ -89,8 +89,9 @@ class NEOBUX(base.baseplugin):
         if self.getHTTP(aLink[1][:-7]+'v2/?s='+self.w(aLink[0][1][1:-1])+'&y='+self.getHashServer(aLink[1], hash)+'&noCache='+str(int(time.time())))[0]:
             return nbCommon.retCodeClickLinksError3
         # TODO Проконтролировать второй ответ
-        print self.gr_module.response.body
-        self.vCash += float(aLink[0][11])
+        price = re.search(r"\[(.*?,){2}(.*?)\]", self.gr_module.response.body).group(2)
+        if price == "0": logging.info(u"Bad result. Click not accepted.")
+        self.vCash += float(price)
         logging.info(u"Your cash %.3f $" % self.vCash)
         return nbCommon.retCodeOK
 
