@@ -123,7 +123,7 @@ class NEOBUX(base.baseplugin):
             # price[9] - Active link
             # price[8] - Time Link
             # price[11] - Price Link
-            if price[9] != '0': aLink.append([price, server.group(1)])
+            if (price[9] != '0') and (len(price[9])>3): aLink.append([price, server.group(1)])
         return aLink
 
     def login2site(self):
