@@ -10,33 +10,39 @@ import nbCommon
 import pickle
 
 class NEOBUX(base.baseplugin):
-    neo_login = 'griva99'
-    neo_pass  = '%40OaoIkgoIwwy_71'
-    neo_pass2 = ''
-    httpLink = ".neobux.com/adalert/g/?t="
-    httpLink2 = "ad"
-    httpLogin = "https://www.neobux.com/m/l/"
-    httpAdv = "https://www.neobux.com/m/v/"
-    neoCookieFile = "Trash/neo_cookie"
+    iniFile = "Trash/neo_surf.ini"
     advCount = 0
     aServerHash = {}
-    vServerHashPath = "Trash/ServerHash"
     vCash = 0
 
+    def LoadConfig(self):
+        import ConfigParser
+        config = ConfigParser.ConfigParser()
+        config.read(self.iniFile)
+        self.neo_login = config.get('neo_surf', 'neo_login')
+        self.neo_pass  = config.get('neo_surf', 'neo_pass')
+        self.neo_pass2 = config.get('neo_surf', 'neo_pass2')
+        self.httpLink = config.get('neo_surf', "httpLink")
+        self.httpLink2 = config.get('neo_surf', "httpLink2")
+        self.httpLogin = config.get('neo_surf', "httpLogin")
+        self.httpAdv = config.get('neo_surf', "httpAdv")
+        self.neoCookieFile = config.get('neo_surf', "neoCookieFile")
+        self.vServerHashPath = config.get('neo_surf', "vServerHashPath")
 
     def __init__(self):
+        self.LoadConfig()
         base.baseplugin.__init__(self)
         logging.debug(u"==> init")
         self.gr_module.setup(reuse_referer = True)
         if not os.path.exists(self.neoCookieFile): 
             f = open(self.neoCookieFile, "w")
+            f.close()
         self.gr_module.setup(cookiefile = self.neoCookieFile)
         # self.gr_module.setup(log_dir = 'd:\Work\Python\Surf_bux\Login\log')
         if os.path.exists(self.vServerHashPath): 
             f = open(self.vServerHashPath, "rb")
             self.aServerHash = pickle.load(f)
             f.close()
-
 
     def getHashServer(self, Server, hash):
         # TODO: len(hash) == 64
@@ -88,10 +94,11 @@ class NEOBUX(base.baseplugin):
             return nbCommon.retCodeClickLinksError2
         if self.gr_module.response.body != "o=['0'];D();": return nbCommon.retCodeClickLinksError4
         if aLink[0][11] == "0.001": vSleep = 5
+        elif aLink[0][11] == "0.005": vSleep = 22
         elif aLink[0][11] == "0.010": vSleep = 33
         elif aLink[0][11] == "0.015": vSleep = 65
         else:
-            logging.info(u"## New price is %s ###" % price)
+            logging.info(u"## New price is %s ###" % aLink[0][11])
             vSleep = 33
         time.sleep(vSleep)
         if self.getHTTP(aLink[1][:-7]+'v2/?s='+self.w(aLink[0][1][1:-1])+'&y='+self.getHashServer(aLink[1], hash)+'&noCache='+str(int(time.time())))[0]:
@@ -119,8 +126,9 @@ class NEOBUX(base.baseplugin):
         return aLink
 
     def login2site(self):
+        os.remove(self.neoCookieFile)
         f = open(self.neoCookieFile, "w")
-        f.close() 
+        f.close()
         logging.debug(u"Wait 5 sec. and trying to login...")
         time.sleep(5)
         login_fields = {}
