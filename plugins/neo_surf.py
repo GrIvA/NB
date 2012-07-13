@@ -96,6 +96,7 @@ class NEOBUX(base.baseplugin):
         if aLink[0][11] == "0.001": vSleep = 5
         elif aLink[0][11] == "0.005": vSleep = 22
         elif aLink[0][11] == "0.010": vSleep = 33
+        elif aLink[0][11] == "'0.010'": vSleep = 33
         elif aLink[0][11] == "0.015": vSleep = 65
         else:
             logging.info(u"## New price is %s ###" % aLink[0][11])
