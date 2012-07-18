@@ -35,8 +35,7 @@ class NEOBUX(base.baseplugin):
             f = open(self.vADVHashPath, "rb")
             self.aADVHash = pickle.load(f)
             f.close()
-            print self.aADVHash
-
+ 
 
     def __init__(self):
         base.baseplugin.__init__(self)
@@ -136,7 +135,7 @@ class NEOBUX(base.baseplugin):
                     if self.aADVHash[vADVHash][0] == 'Y': aLink.append([price, server.group(1)])
                 else: 
                     self.aADVHash[vADVHash] = ['*', price[4], price[5]]
-                    print self.aADVHash
+                    logging.info(u"Add new adv... %s" % price[4])
                 f = open(self.vADVHashPath, "wb")
                 pickle.dump(self.aADVHash, f)
                 f.close()
