@@ -8,17 +8,18 @@ from grab.tools import rex
 import logging
 import nbCommon
 import pickle
+from hashlib import md5
 
 class NEOBUX(base.baseplugin):
-    iniFile = "Trash/neo_surf.ini"
     advCount = 0
     aServerHash = {}
+    aADVHash = {}
     vCash = 0
 
     def LoadConfig(self):
         import ConfigParser
         config = ConfigParser.ConfigParser()
-        config.read(self.iniFile)
+        config.read(nbCommon.iniFile)
         self.neo_login = config.get('neo_surf', 'neo_login')
         self.neo_pass  = config.get('neo_surf', 'neo_pass')
         self.neo_pass2 = config.get('neo_surf', 'neo_pass2')
@@ -28,10 +29,18 @@ class NEOBUX(base.baseplugin):
         self.httpAdv = config.get('neo_surf', "httpAdv")
         self.neoCookieFile = config.get('neo_surf', "neoCookieFile")
         self.vServerHashPath = config.get('neo_surf', "vServerHashPath")
+        self.vADVHashPath = config.get('neo_surf', "vADVHashPath")
+
+        if os.path.exists(self.vADVHashPath): 
+            f = open(self.vADVHashPath, "rb")
+            self.aADVHash = pickle.load(f)
+            f.close()
+            print self.aADVHash
+
 
     def __init__(self):
-        self.LoadConfig()
         base.baseplugin.__init__(self)
+        self.LoadConfig()
         logging.debug(u"==> init")
         self.gr_module.setup(reuse_referer = True)
         if not os.path.exists(self.neoCookieFile): 
@@ -51,7 +60,6 @@ class NEOBUX(base.baseplugin):
             self.aServerHash[Server] = hash
             f = open(self.vServerHashPath, "wb")
             pickle.dump(self.aServerHash, f)
-            print self.aServerHash
             f.close()
 
         return self.aServerHash[Server]
@@ -121,15 +129,24 @@ class NEOBUX(base.baseplugin):
         for ad in re.findall(r'dr_l\(\[.*?]\)',self.gr_module.response.body):
             price = re.findall(r'(\'.*?\'|\d{1,2}(?:\.\d{3})?)', ad)
             # price[9] - Active link
-            # price[8] - Time Link
             # price[11] - Price Link
-            if (price[9] != '0') and (len(price[9])>3): aLink.append([price, server.group(1)])
+            if (price[9] != '0') and (len(price[11])>3): 
+                vADVHash = md5(price[4]+price[5]).hexdigest()
+                if vADVHash in self.aADVHash:
+                    if self.aADVHash[vADVHash][0] == 'Y': aLink.append([price, server.group(1)])
+                else: 
+                    self.aADVHash[vADVHash] = ['*', price[4], price[5]]
+                    print self.aADVHash
+                f = open(self.vADVHashPath, "wb")
+                pickle.dump(self.aADVHash, f)
+                f.close()
         return aLink
 
     def login2site(self):
-        os.remove(self.neoCookieFile)
+        # Clear Cookie
         f = open(self.neoCookieFile, "w")
         f.close()
+
         logging.debug(u"Wait 5 sec. and trying to login...")
         time.sleep(5)
         login_fields = {}

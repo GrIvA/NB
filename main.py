@@ -39,12 +39,28 @@ if __name__ == '__main__':
         """
         exit()
 
-    logging.basicConfig(format = u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s', level = logging.INFO)
+    import ConfigParser
+    config = ConfigParser.ConfigParser()
+    config.read(nbCommon.iniFile)
+    dbgLevel = config.get('main', 'debug_level').lower()
+    if dbgLevel == 'debug':
+        logging.basicConfig(format = u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s', level = logging.DEBUG)
+    elif dbgLevel == 'info':
+        logging.basicConfig(format = u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s', level = logging.INFO)
+    elif dbgLevel == 'critical':
+        logging.basicConfig(format = u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s', level = logging.CRITICAL)
+    else: logging.basicConfig(format = u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s', level = logging.ERROR)
+
     err = loadPlugins(sys.argv[1])
 
     vTimeSleep = nbCommon.vTimeSleep
     while (err[0] == 0) or (err == nbCommon.retCodeNetworkError):
         if err[0] == 0:
+            if not os.path.exists('nothing.load'): 
+                f = open('nothing.load', "w")
+                modules['object'].LoadConfig()
+                f.close()
+
             err = modules['object'].getPage()
             err = modules['object'].analysePage(err)
 

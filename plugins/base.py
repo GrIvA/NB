@@ -9,14 +9,22 @@ import nbCommon
 class baseplugin (object):
     gr_module = 0
     def __init__(self):
+        import ConfigParser
         logging.debug(u" ==> init")
         self.gr_module = Grab()
-
         try: self.gr_module.setup(proxy = nbCommon.proxy, proxy_type = nbCommon.proxy_type)
         except: pass
-
         self.gr_module.setup(reuse_referer = True)
-    
+
+        config = ConfigParser.ConfigParser()
+        config.read(nbCommon.iniFile)
+        logDir = config.get('main', 'log_dir')
+        if logDir != '': self.gr_module.setup(log_dir = logDir)
+
+    def LoadConfig(self):
+        pass
+
+
     def getPage(self):
         return nbCommon.retCodeOK
         
@@ -42,15 +50,6 @@ class baseplugin (object):
             return nbCommon.retCodeOK
 
     def analysePage(self):
-        """
-        Общий анализ страницы.
-        Важно убедиться, что это не страница ощибки,
-        регистрации или еще какое-то сообщение.
-
-        Если все нормально, возвращает 0, иначе, код ощибки, который обязан
-        знать обработчик ошибок класса.
-
-        """
         return nbCommon.retCodeOK
 
     def errorCorrect(self, error):

@@ -17,5 +17,7 @@ retCodeNetworkError = (900, "Network ERROR")
 
 # *********************************
 vTimeSleep = 20
+iniFile = "Trash/neo_surf.ini"
+
 #proxy = '127.0.0.1:8888'
 #proxy_type = 'http'
