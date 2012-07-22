@@ -135,7 +135,7 @@ class NEOBUX(base.baseplugin):
                     if self.aADVHash[vADVHash][0] == 'Y': aLink.append([price, server.group(1)])
                 else: 
                     self.aADVHash[vADVHash] = ['*', price[4], price[5]]
-                    logging.info(u"Add new adv... %s" % price[4])
+                    logging.info(u"Add new adv... %s" % unicode(price[4]))
                 f = open(self.vADVHashPath, "wb")
                 pickle.dump(self.aADVHash, f)
                 f.close()

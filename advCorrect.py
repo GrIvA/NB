@@ -20,6 +20,8 @@ if __name__ == '__main__':
     	if ADVHash[a][0] == '*':
     		print '%s(%s)' % (ADVHash[a][1], ADVHash[a][2])
     		ADVHash[a][0] = raw_input("accept advertising? (Y/N)").upper()
+        else:
+            print "INFO: %s, STATUS: %s" %(ADVHash[a][1], ADVHash[a][0])
 
     f = open(vADVHashPath, "wb")
     pickle.dump(ADVHash, f)
