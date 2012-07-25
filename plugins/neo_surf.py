@@ -88,7 +88,6 @@ class NEOBUX(base.baseplugin):
         return r
 
     def clickLinks(self, aLink):
-        print aLink
         if self.getHTTP(aLink[1]+self.w(aLink[0][1][1:-1]))[0]:
             logging.error(u"clickLinks: ERROR load login page.")
             return nbCommon.retCodeNetworkError
@@ -134,8 +133,8 @@ class NEOBUX(base.baseplugin):
                 if vADVHash in self.aADVHash:
                     if self.aADVHash[vADVHash][0] == 'Y': aLink.append([price, server.group(1)])
                 else: 
-                    self.aADVHash[vADVHash] = ['*', price[4], price[5]]
-                    logging.info(u"Add new adv... %s" % unicode(price[4]))
+                    self.aADVHash[vADVHash] = ['*', unicode(price[4], "cp1252"), unicode(price[5], "cp1252")]
+                    logging.info(u"Add new adv... %s" % unicode(price[4], "cp1252"))
                 f = open(self.vADVHashPath, "wb")
                 pickle.dump(self.aADVHash, f)
                 f.close()
