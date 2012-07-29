@@ -15,15 +15,25 @@ if __name__ == '__main__':
     else:
     	print "Nothing ADV array... sorry"
     	exit()
-
+    SaveFlag = False
     for a in ADVHash:
     	if ADVHash[a][0] == '*':
-    		print '%s(%s)' % (ADVHash[a][1], ADVHash[a][2])
-    		ADVHash[a][0] = raw_input("accept advertising? (Y/N)").upper()
-        else:
-            print "INFO: %s, STATUS: %s" %(ADVHash[a][1], ADVHash[a][0])
-
-    f = open(vADVHashPath, "wb")
-    pickle.dump(ADVHash, f)
-    f.close()
+            SaveFlag = True
+            print '%s(%s)' % (ADVHash[a][1], ADVHash[a][2])
+    
+    if SaveFlag: key = raw_input("accept advertising? (Y/N)").upper()
+    else: 
+        print "      ... Nothing."
+        exit()
+    SaveFlag = False
+    if key == "Y":
+        for a in ADVHash:
+            if ADVHash[a][0] == "*":
+                SaveFlag = True
+                ADVHash[a][0] = "Y"
+    if SaveFlag:
+        f = open(vADVHashPath, "wb")
+        pickle.dump(ADVHash, f)
+        f.close()
+        os.remove("nothing.load")
 
