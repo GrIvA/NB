@@ -10,6 +10,8 @@ import nbCommon
 import pickle
 from hashlib import md5
 
+CurrentCash = ''
+
 class NEOBUX(base.baseplugin):
     advCount = 0
     aServerHash = {}
@@ -179,8 +181,8 @@ class NEOBUX(base.baseplugin):
 
 
     def analysePage(self, err):
+        global CurrentCash
         if err[0]: return err
-
         if self.gr_module.response.code != 200:
             logging.error(u"ERROR: %d" % self.gr_module.response.code)
             return nbCommon.retCodeNetworkError
@@ -190,7 +192,11 @@ class NEOBUX(base.baseplugin):
             logging.error(u"NEO: login ERROR.")
             return nbCommon.retCodeNoLogin
         aStatus = self.gr_module.response.body[1:].split(",")
-        logging.info(u"cash: %s.%s$, adv: %s" % (aStatus[7][:-1], aStatus[8][1:], aStatus[18]))
+        Cash = aStatus[7][1:-1]+"."+aStatus[8][1:-1]
+        if CurrentCash != Cash:
+            CurrentCash = Cash
+            print "Current: %s; Cash: %s" % (CurrentCash, Cash)
+            logging.info(u"cash: %s$, adv: %s" % (Cash, aStatus[18]))
         self.httpLink2 = aStatus[29][1:-2]
         if (aStatus[18] != '0') :
             self.advCount = aStatus[3]
