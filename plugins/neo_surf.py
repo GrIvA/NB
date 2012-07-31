@@ -119,6 +119,19 @@ class NEOBUX(base.baseplugin):
         logging.info(u"Your cash %.3f $" % self.vCash)
         return nbCommon.retCodeOK
 
+    def SetADVFlag(self, advName, advAnons):
+        vADVHash = md5(advName+advAnons).hexdigest()
+        if not (vADVHash in self.aADVHash):
+            self.aADVHash[vADVHash] = ['*', advName, advAnons]
+            logging.info(u"Add new adv... %s" % advName)
+            f = open(self.vADVHashPath, "wb")
+            pickle.dump(self.aADVHash, f)
+            f.close()
+            return False
+        if self.aADVHash[vADVHash][0] == "Y": return True
+        else: return False
+
+
     def getAdvPage(self):
         logging.debug(u"load adv page.")
         aLink = []
@@ -130,16 +143,9 @@ class NEOBUX(base.baseplugin):
             price = re.findall(r'(\'.*?\'|\d{1,2}(?:\.\d{3})?)', ad)
             # price[9] - Active link
             # price[11] - Price Link
-            if (price[9] != '0') and (len(price[11])>3): 
-                vADVHash = md5(price[4]+price[5]).hexdigest()
-                if vADVHash in self.aADVHash:
-                    if self.aADVHash[vADVHash][0] == 'Y': aLink.append([price, server.group(1)])
-                else: 
-                    self.aADVHash[vADVHash] = ['*', unicode(price[4], "cp1252"), unicode(price[5], "cp1252")]
-                    logging.info(u"Add new adv... %s" % unicode(price[4], "cp1252"))
-                f = open(self.vADVHashPath, "wb")
-                pickle.dump(self.aADVHash, f)
-                f.close()
+            if (price[9] != '0') and (len(price[11])>3):
+                if self.SetADVFlag(unicode(price[4], "cp1252"), unicode(price[5], "cp1252")): 
+                    aLink.append([price, server.group(1)]) 
         return aLink
 
     def login2site(self):
@@ -195,7 +201,6 @@ class NEOBUX(base.baseplugin):
         Cash = aStatus[7][1:-1]+"."+aStatus[8][1:-1]
         if CurrentCash != Cash:
             CurrentCash = Cash
-            print "Current: %s; Cash: %s" % (CurrentCash, Cash)
             logging.info(u"cash: %s$, adv: %s" % (Cash, aStatus[18]))
         self.httpLink2 = aStatus[29][1:-2]
         if (aStatus[18] != '0') :
