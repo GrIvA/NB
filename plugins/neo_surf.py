@@ -127,7 +127,7 @@ class NEOBUX(base.baseplugin):
             f = open(self.vADVHashPath, "wb")
             pickle.dump(self.aADVHash, f)
             f.close()
-            return False
+            return True   # False
         if self.aADVHash[vADVHash][0] == "Y": return True
         else: return False
 
