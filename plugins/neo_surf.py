@@ -120,6 +120,7 @@ class NEOBUX(base.baseplugin):
         return nbCommon.retCodeOK
 
     def SetADVFlag(self, advName, advAnons):
+        return True
         vADVHash = md5(advName+advAnons).hexdigest()
         if not (vADVHash in self.aADVHash):
             self.aADVHash[vADVHash] = ['*', advName, advAnons]
@@ -161,7 +162,7 @@ class NEOBUX(base.baseplugin):
             return nbCommon.retCodeNoLoadLP
 
         login_fields['lg'] = self.w(rex.rex_text(self.gr_module.response.body, re.compile("lg1\('(\w*.)'")))
-        login_fields['img'] = self.gr_module.xpath('//iframe[@class="mbxm"]').get('src')
+#        login_fields['img'] = self.gr_module.xpath('//iframe[@class="mbxm"]').get('src')
 
         login_fields['Kf1'] = self.gr_module.xpath('//input[@id="Kf1"]').get('name')
         login_fields['Kf2'] = self.gr_module.xpath('//input[@id="Kf2"]').get('name')
@@ -170,10 +171,10 @@ class NEOBUX(base.baseplugin):
         login_fields['lge'] = self.gr_module.xpath('//input[@name="lge"]').get('value')
         login_fields['login'] = self.gr_module.xpath('//input[@name="login"]').get('value')
 
-        self.getHTTP(login_fields['img'])
-        img_url = self.gr_module.xpath('//div[@id="a"]/img').get('src')
-        vCaptcha = raw_input("https://img.neobux.com"+img_url+"  ==> Input 5 symvols: ")
-        login_fields['captcha'] = vCaptcha.upper()
+#        self.getHTTP(login_fields['img'])
+#        img_url = self.gr_module.xpath('//div[@id="a"]/img').get('src')
+#        vCaptcha = raw_input("https://img.neobux.com"+img_url+"  ==> Input 5 symvols: ")
+#        login_fields['captcha'] = vCaptcha.upper()
         # print login_fields
 
         logging.debug(u"login ==> POST data")
@@ -181,7 +182,7 @@ class NEOBUX(base.baseplugin):
                                    login_fields['Kf1']+login_fields['lg'][2]+'='+self.neo_login+'&'+
                                    login_fields['Kf2']+login_fields['lg'][6]+'='+self.neo_pass+'&'+
                                    login_fields['Kf4']+login_fields['lg'][14]+'='+self.neo_pass2+'&'+
-                                   login_fields['Kf3']+login_fields['lg'][10]+'='+login_fields['captcha']+'&'+
+#                                   login_fields['Kf3']+login_fields['lg'][10]+'='+login_fields['captcha']+'&'+
                                    'login='+login_fields['login'])
         return self.getHTTP(self.httpLogin)
 
