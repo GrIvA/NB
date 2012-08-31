@@ -145,8 +145,12 @@ class NEOBUX(base.baseplugin):
             # price[9] - Active link
             # price[11] - Price Link
             if (price[9] != '0') and (len(price[11])>3):
-                if self.SetADVFlag(unicode(price[4], "cp1252"), unicode(price[5], "cp1252")): 
-                    aLink.append([price, server.group(1)]) 
+                try:
+                    if self.SetADVFlag(unicode(price[4], "cp1252"), unicode(price[5], "cp1252")): 
+                        aLink.append([price, server.group(1)])
+                except Exception:
+                    logging.error(u"getAdvPage: ERROR add advertizing.")
+                 
         return aLink
 
     def login2site(self):
