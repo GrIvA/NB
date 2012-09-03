@@ -186,7 +186,7 @@ class NEOBUX(base.baseplugin):
                                    login_fields['Kf1']+login_fields['lg'][2]+'='+self.neo_login+'&'+
                                    login_fields['Kf2']+login_fields['lg'][6]+'='+self.neo_pass+'&'+
                                    login_fields['Kf4']+login_fields['lg'][14]+'='+self.neo_pass2+'&'+
-#                                   login_fields['Kf3']+login_fields['lg'][10]+'='+login_fields['captcha']+'&'+
+                                   login_fields['Kf3']+login_fields['lg'][10]+'='+'&'+
                                    'login='+login_fields['login'])
         return self.getHTTP(self.httpLogin)
 
