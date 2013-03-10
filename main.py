@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
-import os, sys
+import os
+import sys
 import inspect
 import time
 import logging
@@ -19,10 +20,10 @@ def loadPlugins(plugName):
     logging.info(u"load module: ==> %s" % plugName)
 
     try:
-        package_obj = __import__(plugin_dir + "." +  plugName)
+        package_obj = __import__(plugin_dir + "." + plugName)
         module_obj = getattr(package_obj, plugName)
         for elem in dir(module_obj):
-            obj = getattr (module_obj, elem)
+            obj = getattr(module_obj, elem)
             # Это класс? Класс производный от baseplugin?
             if inspect.isclass(obj) and issubclass(obj, plugins.base.baseplugin):
                 # Создаем экземпляр и выполняем функцию run
@@ -44,19 +45,20 @@ if __name__ == '__main__':
     config.read(nbCommon.iniFile)
     dbgLevel = config.get('main', 'debug_level').lower()
     if dbgLevel == 'debug':
-        logging.basicConfig(format = u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s', level = logging.DEBUG)
+        logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s', level=logging.DEBUG)
     elif dbgLevel == 'info':
-        logging.basicConfig(format = u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s', level = logging.INFO)
+        logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s', level=logging.INFO)
     elif dbgLevel == 'critical':
-        logging.basicConfig(format = u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s', level = logging.CRITICAL)
-    else: logging.basicConfig(format = u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s', level = logging.ERROR)
+        logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s', level=logging.CRITICAL)
+    else:
+        logging.basicConfig(format=u'%(filename)s[LINE:%(lineno)d]# %(levelname)-8s [%(asctime)s]  %(message)s', level=logging.ERROR)
 
     err = loadPlugins(sys.argv[1])
 
     vTimeSleep = nbCommon.vTimeSleep
     while (err[0] == 0) or (err == nbCommon.retCodeNetworkError):
         if err[0] == 0:
-            if not os.path.exists('nothing.load'): 
+            if not os.path.exists('nothing.load'):
                 f = open('nothing.load', "w")
                 modules['object'].LoadConfig()
                 f.close()
@@ -71,15 +73,15 @@ if __name__ == '__main__':
                     err = modules['object'].clickLinks(a)
                     logging.debug(u"Sleeping 10 sec.")
                     time.sleep(10)
-                    if err[0]: 
+                    if err[0]:
                         logging.error(err)
                         break
 
         if err == nbCommon.retCodeNetworkError:
-            vTimeSleep = 1.30*vTimeSleep if vTimeSleep < 800 else 900
-        else: vTimeSleep = nbCommon.vTimeSleep
+            vTimeSleep = 1.30 * vTimeSleep if vTimeSleep < 800 else 900
+        else:
+            vTimeSleep = nbCommon.vTimeSleep
 
         err = modules['object'].errorCorrect(err)
         logging.debug(u"Sleeping %s sec." % vTimeSleep)
         time.sleep(vTimeSleep)
-

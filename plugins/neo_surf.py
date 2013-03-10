@@ -207,7 +207,8 @@ class NEOBUX(base.baseplugin):
         if CurrentCash != Cash:
             CurrentCash = Cash
             logging.info(u"cash: %s$, adv: %s" % (Cash, aStatus[18]))
-        self.httpLink2 = aStatus[29][1:-2]
+            logging.debug(u"STATUS: %s" % self.gr_module.response.body)
+        self.httpLink2 = aStatus[29][1:-1]
         if (aStatus[18] != '0') :
             self.advCount = aStatus[3]
             return nbCommon.retCodeReklYes
