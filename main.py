@@ -72,7 +72,7 @@ if __name__ == '__main__':
                 for a in aAdvLink:
                     err = modules['object'].clickLinks(a)
                     logging.debug(u"Sleeping 10 sec.")
-                    time.sleep(10)
+                    time.sleep(22)
                     if err[0]:
                         logging.error(err)
                         break

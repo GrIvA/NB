@@ -12,6 +12,7 @@ from hashlib import md5
 
 CurrentCash = ''
 
+
 class NEOBUX(base.baseplugin):
     advCount = 0
     aServerHash = {}
@@ -23,7 +24,7 @@ class NEOBUX(base.baseplugin):
         config = ConfigParser.ConfigParser()
         config.read(nbCommon.iniFile)
         self.neo_login = config.get('neo_surf', 'neo_login')
-        self.neo_pass  = config.get('neo_surf', 'neo_pass')
+        self.neo_pass = config.get('neo_surf', 'neo_pass')
         self.neo_pass2 = config.get('neo_surf', 'neo_pass2')
         self.httpLink = config.get('neo_surf', "httpLink")
         self.httpLink2 = config.get('neo_surf', "httpLink2")
@@ -33,23 +34,22 @@ class NEOBUX(base.baseplugin):
         self.vServerHashPath = config.get('neo_surf', "vServerHashPath")
         self.vADVHashPath = config.get('neo_surf', "vADVHashPath")
 
-        if os.path.exists(self.vADVHashPath): 
+        if os.path.exists(self.vADVHashPath):
             f = open(self.vADVHashPath, "rb")
             self.aADVHash = pickle.load(f)
             f.close()
- 
 
     def __init__(self):
         base.baseplugin.__init__(self)
         self.LoadConfig()
         logging.debug(u"==> init")
-        self.gr_module.setup(reuse_referer = True)
-        if not os.path.exists(self.neoCookieFile): 
+        self.gr_module.setup(reuse_referer=True)
+        if not os.path.exists(self.neoCookieFile):
             f = open(self.neoCookieFile, "w")
             f.close()
-        self.gr_module.setup(cookiefile = self.neoCookieFile)
+        self.gr_module.setup(cookiefile=self.neoCookieFile)
         # self.gr_module.setup(log_dir = 'd:\Work\Python\Surf_bux\Login\log')
-        if os.path.exists(self.vServerHashPath): 
+        if os.path.exists(self.vServerHashPath):
             f = open(self.vServerHashPath, "rb")
             self.aServerHash = pickle.load(f)
             f.close()
@@ -57,7 +57,7 @@ class NEOBUX(base.baseplugin):
     def getHashServer(self, Server, hash):
         # TODO: len(hash) == 64
         if Server in self.aServerHash: pass
-        else: 
+        else:
             self.aServerHash[Server] = hash
             f = open(self.vServerHashPath, "wb")
             pickle.dump(self.aServerHash, f)
@@ -65,40 +65,42 @@ class NEOBUX(base.baseplugin):
 
         return self.aServerHash[Server]
 
-
-    def getPage (self):
+    def getPage(self):
         """
         Получение http страницы, анализ ее на ошибки"
         """
-        return self.getHTTP("http://"+self.httpLink2+self.httpLink+str(int(time.time())))
+        return self.getHTTP("http://" + self.httpLink2 + self.httpLink + str(int(time.time())))
 
     def w(self, key):
-        k='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
-        j = 0; r = ''
+        k = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
+        j = 0
+        r = ''
         while j < len(key):
             e1 = k.find(key[j])
-            e2 = k.find(key[j+1])
-            e3 = k.find(key[j+2])
-            e4 = k.find(key[j+3])
+            e2 = k.find(key[j + 1])
+            e3 = k.find(key[j + 2])
+            e4 = k.find(key[j + 3])
             j += 4
-            c1 = (e1<<2)|(e2>>4)
-            c2 = ((e2&15)<<4)|(e3>>2)
-            c3 = ((e3&3)<<6)|e4
+            c1 = (e1 << 2) | (e2 >> 4)
+            c2 = ((e2 & 15) << 4) | (e3 >> 2)
+            c3 = ((e3 & 3) << 6) | e4
             r = r + chr(c1)
             if e3 != 64: r = r + chr(c2)
             if e4 != 64: r = r + chr(c3)
         return r
 
     def clickLinks(self, aLink):
-        if self.getHTTP(aLink[1]+self.w(aLink[0][1][1:-1]))[0]:
+        if self.getHTTP(aLink[1] + self.w(aLink[0][1][1:-1]))[0]:
             logging.error(u"clickLinks: ERROR load login page.")
             return nbCommon.retCodeNetworkError
         try:
             hash = re.search(r"try{df\('(.*?)'\);}", self.gr_module.response.body).group(1)
-        except Exception, e:
+        except Exception:
             return nbCommon.retCodeClickLinksError6
-        
-        if self.getHTTP(aLink[1][:-7]+'v1/?s='+self.w(aLink[0][1][1:-1])+'&y='+self.getHashServer(aLink[1], hash)+'&noCache='+str(int(time.time())))[0]:
+
+        if self.getHTTP(aLink[1][:-7] + 'v1/?s=' + self.w(aLink[0][1][1:-1]) +
+                        '&y=' + self.getHashServer(aLink[1], hash) +
+                        '&noCache=' + str(int(time.time())))[0]:
             return nbCommon.retCodeClickLinksError2
         if self.gr_module.response.body != "o=['0'];D();": return nbCommon.retCodeClickLinksError4
         if aLink[0][11] == "0.001": vSleep = 5
@@ -110,7 +112,9 @@ class NEOBUX(base.baseplugin):
             logging.info(u"## New price is %s ###" % aLink[0][11])
             vSleep = 33
         time.sleep(vSleep)
-        if self.getHTTP(aLink[1][:-7]+'v2/?s='+self.w(aLink[0][1][1:-1])+'&y='+self.getHashServer(aLink[1], hash)+'&noCache='+str(int(time.time())))[0]:
+        if self.getHTTP(aLink[1][:-7] + 'v2/?s=' + self.w(aLink[0][1][1:-1]) +
+                        '&y=' + self.getHashServer(aLink[1], hash) +
+                        '&noCache=' + str(int(time.time())))[0]:
             return nbCommon.retCodeClickLinksError3
         # TODO Проконтролировать второй ответ
         price = re.search(r"\[(.*?,){2}(.*?)\]", self.gr_module.response.body).group(2)
@@ -121,7 +125,7 @@ class NEOBUX(base.baseplugin):
 
     def SetADVFlag(self, advName, advAnons):
         return True
-        vADVHash = md5(advName+advAnons).hexdigest()
+        vADVHash = md5(advName + advAnons).hexdigest()
         if not (vADVHash in self.aADVHash):
             self.aADVHash[vADVHash] = ['*', advName, advAnons]
             logging.info(u"Add new adv... %s" % advName)
@@ -132,25 +136,26 @@ class NEOBUX(base.baseplugin):
         if self.aADVHash[vADVHash][0] == "Y": return True
         else: return False
 
-
     def getAdvPage(self):
         logging.debug(u"load adv page.")
         aLink = []
         if self.getHTTP(self.httpAdv)[0]:
             logging.error(u"getAdvPage: ERROR load login page.")
             return aLink
-        server = re.search(r'href="(http://ad.+a=l&l=)', self.gr_module.response.body)   
-        for ad in re.findall(r'dr_l\(\[.*?]\)',self.gr_module.response.body):
+        server = re.search(r'href="(http://ad.+a=l&l=)', self.gr_module.response.body)
+        print server
+        for ad in re.findall(r'dr_l\(\[.*?]\)', self.gr_module.response.body):
             price = re.findall(r'(\'.*?\'|\d{1,2}(?:\.\d{3})?)', ad)
             # price[9] - Active link
             # price[11] - Price Link
-            if (price[9] != '0') and (len(price[11])>3):
+            if (price[9] != '0') and (len(price[11]) > 3):
                 try:
-                    if self.SetADVFlag(unicode(price[4], "cp1252"), unicode(price[5], "cp1252")): 
-                        aLink.append([price, server.group(1)])
+                    if self.SetADVFlag(unicode(price[4], "cp1252"), unicode(price[5], "cp1252")):
+                        # aLink.append([price, server.group(1)])
+                        aLink.append([price, 'http://www.neobux.com/v/?a=l&l='])
                 except Exception:
                     logging.error(u"getAdvPage: ERROR add advertizing.")
-                 
+
         return aLink
 
     def login2site(self):
@@ -182,14 +187,13 @@ class NEOBUX(base.baseplugin):
         # print login_fields
 
         logging.debug(u"login ==> POST data")
-        self.gr_module.setup(post='lge='+login_fields['lge']+'&'+
-                                   login_fields['Kf1']+login_fields['lg'][2]+'='+self.neo_login+'&'+
-                                   login_fields['Kf2']+login_fields['lg'][6]+'='+self.neo_pass+'&'+
-                                   login_fields['Kf4']+login_fields['lg'][14]+'='+self.neo_pass2+'&'+
-                                   login_fields['Kf3']+login_fields['lg'][10]+'='+'&'+
-                                   'login='+login_fields['login'])
+        self.gr_module.setup(post='lge=' + login_fields['lge'] + '&' +
+                             login_fields['Kf1'] + login_fields['lg'][2] + '=' + self.neo_login + '&' +
+                             login_fields['Kf2'] + login_fields['lg'][6] + '=' + self.neo_pass + '&' +
+                             login_fields['Kf4'] + login_fields['lg'][14] + '=' + self.neo_pass2 + '&' +
+                             login_fields['Kf3'] + login_fields['lg'][10] + '=' + '&' +
+                             'login=' + login_fields['login'])
         return self.getHTTP(self.httpLogin)
-
 
     def analysePage(self, err):
         global CurrentCash
@@ -199,17 +203,17 @@ class NEOBUX(base.baseplugin):
             return nbCommon.retCodeNetworkError
 
         #Может нужно залогинится?
-        if self.gr_module.response.body[1] == '0' or  len(self.gr_module.response.body) > 300:
+        if self.gr_module.response.body[1] == '0' or len(self.gr_module.response.body) > 300:
             logging.error(u"NEO: login ERROR.")
             return nbCommon.retCodeNoLogin
         aStatus = self.gr_module.response.body[1:].split(",")
-        Cash = aStatus[7][1:-1]+"."+aStatus[8][1:-1]
+        Cash = aStatus[7][1:-1] + "." + aStatus[8][1:-1]
         if CurrentCash != Cash:
             CurrentCash = Cash
             logging.info(u"cash: %s$, adv: %s" % (Cash, aStatus[18]))
             logging.debug(u"STATUS: %s" % self.gr_module.response.body)
         self.httpLink2 = aStatus[29][1:-1]
-        if (aStatus[18] != '0') :
+        if (aStatus[18] != '0'):
             self.advCount = aStatus[3]
             return nbCommon.retCodeReklYes
         return nbCommon.retCodeOK
@@ -218,6 +222,6 @@ class NEOBUX(base.baseplugin):
         if err[0] == 0: return nbCommon.retCodeOK
         elif err == nbCommon.retCodeNoLogin:  # Login
             return self.login2site()
-        elif err == nbCommon.retCodeNetworkError: # Network Connection
+        elif err == nbCommon.retCodeNetworkError:  # Network Connection
             return nbCommon.retCodeOK
-        return base.baseplugin.errorCorrect(self, err) # Other Error
+        return base.baseplugin.errorCorrect(self, err)  # Other Error
